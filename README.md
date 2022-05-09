@@ -12,14 +12,19 @@ I recommend using the NuGet package: [PerformantReflection](https://www.nuget.or
 Simply instantiate an `ObjectAccessor` and feed it the object you want to access.
 Then you can loop over the `Properties`, index into them with `["PropertyName"]` or use `TryGetValue` if you're unsure whether the property even exists:
 
+### Examples:
 ```
-var myObject = new {
-	Username ="Old username"
+class User {
+	public string Username { get;set; }
+}
+
+var user = new User {
+	Username = "Old username"
 };
 
-var accessor = new ObjectAccessor(myObject);
+var accessor = new ObjectAccessor(user);
 
 var existingUsername = accessor.Properties["Username"].GetValue();
 
-accessor.Properties["Username"].SetValue("New username set");
+accessor.Properties["Username"].SetValue("New username");
 ```

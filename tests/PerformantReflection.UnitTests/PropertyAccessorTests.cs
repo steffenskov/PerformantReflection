@@ -138,4 +138,32 @@ public class PropertyAccessorTests
 		// Assert
 		Assert.False(accessor.Properties[nameof(obj.Username)].HasSetter);
 	}
+
+	[Fact]
+	public void SetValue_RecordWithPrimaryConstructor_CanSet()
+	{
+		// Arrange
+		var obj = new SimpleRecord("Steffen", "Some password");
+		var accessor = new ObjectAccessor(obj);
+
+		// Act
+		accessor.Properties[nameof(obj.Username)].SetValue("New name");
+
+		// Assert
+		Assert.Equal("New name", obj.Username);
+	}
+
+	[Fact]
+	public void SetValue_PropertyHasInit_CanSet()
+	{
+		// Arrange
+		var obj = new ObjectWithMixedPropertyVisibility();
+		var accessor = new ObjectAccessor(obj, includePrivateProperties: true);
+
+		// Act
+		accessor.Properties[nameof(obj.InternalInitProperty)].SetValue(42);
+
+		// Assert
+		Assert.Equal(42, obj.InternalInitProperty);
+	}
 }

@@ -6,5 +6,5 @@ public class ObjectWithMixedPropertyVisibility
 
 	public Guid Id { protected get; set; }
 
-	internal int InternalProperty { get; set; }
+	internal int InternalInitProperty { get; init; }
 }

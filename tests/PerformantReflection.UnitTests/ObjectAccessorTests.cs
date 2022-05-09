@@ -111,8 +111,8 @@ public class ObjectAccessorTests
 
 		// Assert
 		Assert.Equal(2, properties.Count);
-		Assert.Contains("Username", properties.Keys);
-		Assert.Contains("Id", properties.Keys);
+		Assert.Contains(nameof(obj.Username), properties.Keys);
+		Assert.Contains(nameof(obj.Id), properties.Keys);
 		foreach (var property in properties.Values)
 		{
 			Assert.True(property.HasGetter);
@@ -131,6 +131,6 @@ public class ObjectAccessorTests
 		var properties = accessor.Properties.ToDictionary(prop => prop.Name);
 
 		// Assert
-		Assert.Contains("InternalProperty", properties.Keys);
+		Assert.Contains(nameof(obj.InternalInitProperty), properties.Keys);
 	}
 }
