@@ -14,12 +14,12 @@ public class PropertyAccessor
 
 
 	/// <summary>
-	/// Whether or not the property has a getter, if no getter exists the GetValue method will throw an exception if invoked.
+	/// Whether or not the property has a getter, if no getter exists the GetValue method will throw an InvalidOperationException if invoked.
 	/// </summary>
 	public bool HasGetter => _getter is not null;
 
 	/// <summary>
-	/// Whether or not the property has a setter, if no setter exists the SetValue method will throw an exception if invoked.
+	/// Whether or not the property has a setter, if no setter exists the SetValue method will throw an InvalidOperationException if invoked.
 	/// </summary>
 	public bool HasSetter => _setter is not null;
 
@@ -49,7 +49,7 @@ public class PropertyAccessor
 	}
 
 	/// <summary>
-	/// Sets the property's value. The caller has to ensure the value has the proper type or an exception will occur.
+	/// Sets the property's value. The caller has to ensure the value has the proper type or an InvalidCastException will be thrown.
 	/// </summary>
 	/// <param name="value">New value to set to the property</param>
 	public void SetValue(object? value)
