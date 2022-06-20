@@ -1,4 +1,3 @@
-using System.Security.AccessControl;
 namespace PerformantReflection.UnitTests;
 
 public class PropertyAccessorTests

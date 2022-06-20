@@ -1,5 +1,3 @@
-
-
 namespace PerformantReflection.UnitTests;
 
 public class ObjectAccessorTests
