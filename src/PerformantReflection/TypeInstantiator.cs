@@ -11,6 +11,9 @@ public static class TypeInstantiator
 	/// <param name="type">Type to create an instance of.</param>
 	public static object CreateInstance(Type type)
 	{
+		if (type.IsValueType)
+			return Activator.CreateInstance(type)!; // Value types don't necessarily have a proper default constructor for the IL generation to work, so this is a safe workaround albeit slower than IL.
+
 		var ctor = _constructors.GetOrAdd(type, CreateConstructorDelegate);
 		return ctor();
 	}
