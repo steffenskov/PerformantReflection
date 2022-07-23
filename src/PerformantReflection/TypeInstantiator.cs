@@ -1,13 +1,13 @@
 using System;
-using System.Collections.Concurrent;
 using System.Reflection;
 using System.Reflection.Emit;
+using PerformantReflection.Collections;
 
 namespace PerformantReflection
 {
 	public static class TypeInstantiator
 	{
-		private static ConcurrentDictionary<Type, Func<object>> _constructors = new();
+		private static LockedConcurrentDictionary<Type, Func<object>> _constructors = new();
 
 		/// <summary>
 		/// Create a new instance of the given type.

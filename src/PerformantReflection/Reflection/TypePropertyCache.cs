@@ -1,16 +1,16 @@
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
+using PerformantReflection.Collections;
 
 namespace PerformantReflection.Reflection
 {
 
 	internal static class TypePropertyCache
 	{
-		private static ConcurrentDictionary<Type, IReadOnlyCollection<PropertyData>> _typeProperties = new();
+		private static LockedConcurrentDictionary<Type, IReadOnlyCollection<PropertyData>> _typeProperties = new();
 
 		/// <summary>
 		/// Gets a dictionary of PropertyMethods for all properties on the target.
