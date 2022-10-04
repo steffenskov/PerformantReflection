@@ -3,7 +3,7 @@
   <PropertyGroup>
     <TargetFramework>net5.0</TargetFramework>
     <Nullable>enable</Nullable>
-	<Version>1.2.1</Version>
+	<Version>1.3.0</Version>
     <Authors>Steffen Skov</Authors>
     <Company>Steffen Skov</Company>
     <Description>A super small library for making Reflection FAST.</Description>
