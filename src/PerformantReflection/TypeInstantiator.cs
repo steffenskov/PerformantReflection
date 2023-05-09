@@ -7,10 +7,20 @@ namespace PerformantReflection
 {
 	public static class TypeInstantiator
 	{
-		private static LockedConcurrentDictionary<Type, Func<object>> _constructors = new();
+		private static readonly LockedConcurrentDictionary<Type, Func<object>> _constructors = new();
 
 		/// <summary>
-		/// Create a new instance of the given type.
+		/// Creates a new instance of the given type.
+		/// Requires the type to have a default constructor. 
+		/// </summary>
+		/// <typeparam name="T">Type to create an instance of.</typeparam>
+		public static T CreateInstance<T>()
+		{
+			return (T)CreateInstance(typeof(T));
+		}
+		
+		/// <summary>
+		/// Creates a new instance of the given type.
 		/// Requires the type to have a default constructor.
 		/// </summary>
 		/// <param name="type">Type to create an instance of.</param>
