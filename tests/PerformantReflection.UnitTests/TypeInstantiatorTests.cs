@@ -17,6 +17,17 @@ public class TypeInstantiatorTests
 	}
 
 	[Fact]
+	public void CreateInstance_UsingGenerics_InstanceIsCreated()
+	{
+		// Act
+		var instance = TypeInstantiator.CreateInstance<TypeWithDefaultConstructor>();
+
+		// Assert
+		Assert.NotNull(instance);
+		Assert.IsType<TypeWithDefaultConstructor>(instance);
+	}
+
+	[Fact]
 	public void CreateInstance_Twice_InstancesAreNotSame()
 	{
 		// Arrange
