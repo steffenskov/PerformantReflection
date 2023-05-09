@@ -3,7 +3,6 @@ using System;
 
 namespace PerformantReflection
 {
-
     /// <summary>
     /// PropertyAccessor let's you get and set any property of an object.
     /// </summary>
@@ -31,14 +30,13 @@ namespace PerformantReflection
 
         internal PropertyAccessor(object target, PropertyData property)
         {
-            if (target is null)
-                throw new ArgumentNullException(nameof(target));
             if (property is null)
                 throw new ArgumentNullException(nameof(property));
             if (property.Getter is null && property.Setter is null)
-                throw new ArgumentNullException(nameof(property), $"Both getter and setter were null for property {property.Name}");
+                throw new ArgumentNullException(nameof(property),
+                    $"Both getter and setter were null for property {property.Name}");
 
-            _target = target;
+            _target = target ?? throw new ArgumentNullException(nameof(target));
             _getter = property.Getter;
             _setter = property.Setter;
             Name = property.Name;
@@ -52,7 +50,9 @@ namespace PerformantReflection
         public object? GetValue()
         {
             if (_getter is null)
+            {
                 throw new InvalidOperationException($"Property {Name} has no getter");
+            }
 
             return _getter(_target);
         }
@@ -64,7 +64,9 @@ namespace PerformantReflection
         public void SetValue(object? value)
         {
             if (_setter is null)
+            {
                 throw new InvalidOperationException($"Property {Name} has no setter");
+            }
 
             _setter(_target, value);
         }
