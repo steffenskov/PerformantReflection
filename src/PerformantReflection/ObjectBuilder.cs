@@ -4,19 +4,19 @@ using PerformantReflection.Reflection;
 
 namespace PerformantReflection
 {
-	public class InstanceBuilder<T>
+	public class ObjectBuilder<T>
 	where T : notnull, new()
 	{
 		private readonly ObjectAccessor _accessor;
 		private readonly T _result;
 
-		public InstanceBuilder()
+		public ObjectBuilder()
 		{
 			_result = TypeInstantiator.CreateInstance<T>();
 			_accessor = new ObjectAccessor(_result);
 		}
 
-		public InstanceBuilder<T> With<TValue>(Expression<Func<T, TValue?>> expression, TValue value)
+		public ObjectBuilder<T> With<TValue>(Expression<Func<T, TValue?>> expression, TValue value)
 		{
 			var propertyName = ExpressionParser<T>.GetPropertyNameFromExpression(expression);
 			_accessor.Properties[propertyName].SetValue(value);
