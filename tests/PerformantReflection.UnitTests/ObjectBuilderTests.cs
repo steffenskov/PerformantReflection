@@ -1,6 +1,6 @@
 namespace PerformantReflection.UnitTests;
 
-public class InstanceBuilderTests
+public class ObjectBuilderTests
 {
 	private class Fake
 	{
@@ -12,7 +12,7 @@ public class InstanceBuilderTests
 	public void With_PropertyName_Valid()
 	{
 		// Arrange
-		var builder = new InstanceBuilder<Fake>();
+		var builder = new ObjectBuilder<Fake>();
 		var id = Guid.NewGuid();
 		
 		// Act
@@ -27,7 +27,7 @@ public class InstanceBuilderTests
 	public void With_AnonymousType_Throws()
 	{
 		// Arrange
-		var builder = new InstanceBuilder<Fake>();
+		var builder = new ObjectBuilder<Fake>();
 
 		// Act && Assert
 		var ex = Assert.Throws<NotSupportedException>(() =>  builder.With(instance => new { instance.Name }, null));
