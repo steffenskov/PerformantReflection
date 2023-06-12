@@ -12,7 +12,7 @@ namespace PerformantReflection
 		public PropertyCollection Properties { get; }
 
 		/// <summary>
-		/// Create a new ObjectAccesor which exposes the properties of the target given.
+		/// Create a new ObjectAccessor which exposes the properties of the target given.
 		/// </summary>
 		/// <param name="target">Target object to access properties of.</param>
 		/// <param name="includePrivateProperties">Whether to include private properties or not.</param>
@@ -20,8 +20,9 @@ namespace PerformantReflection
 		{
 			if (target is null)
 				throw new ArgumentNullException(nameof(target));
-			var propertyDatas = TypePropertyCache.GetPropertiesOfType(target.GetType(), includePrivateProperties);
-			var accessors = propertyDatas
+
+			var properties = TypePropertyCache.GetPropertiesOfType(target.GetType(), includePrivateProperties);
+			var accessors = properties
 									.Select(property => new PropertyAccessor(target, property));
 
 			Properties = new PropertyCollection(accessors);

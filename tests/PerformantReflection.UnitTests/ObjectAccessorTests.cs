@@ -1,3 +1,5 @@
+using Xunit.Sdk;
+
 namespace PerformantReflection.UnitTests;
 
 public class ObjectAccessorTests

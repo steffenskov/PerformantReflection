@@ -8,7 +8,7 @@ namespace PerformantReflection
 	/// <summary>
 	/// Exposes all the properties of a single object.
 	/// </summary>
-	public class PropertyCollection : IEnumerable<PropertyAccessor>, IReadOnlyCollection<PropertyAccessor>
+	public class PropertyCollection : IReadOnlyCollection<PropertyAccessor>
 	{
 		private readonly IDictionary<string, PropertyAccessor> _accessors;
 

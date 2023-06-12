@@ -10,11 +10,11 @@ namespace PerformantReflection.Reflection
 		{
 			var propertyName = GetMemberName(expression);
 			var properties = TypePropertyCache.GetPropertiesOfType(typeof(T), false).ToDictionary(prop => prop.Name);
-			if (!properties.TryGetValue(propertyName, out var propertyData))
+			if (!properties.TryGetValue(propertyName, out var propertyInformation))
 				throw new InvalidOperationException(
 					$"{typeof(T).Name} doesn't contain a property named {propertyName}.");
 
-			return propertyData.Name;
+			return propertyInformation.Name;
 		}
 
 		private static string GetMemberName(Expression expression)

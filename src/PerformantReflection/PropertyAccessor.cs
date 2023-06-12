@@ -28,7 +28,7 @@ namespace PerformantReflection
 
         public Type Type { get; }
 
-        internal PropertyAccessor(object target, PropertyData property)
+        internal PropertyAccessor(object target, PropertyInformation property)
         {
             if (property is null)
                 throw new ArgumentNullException(nameof(property));
