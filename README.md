@@ -6,7 +6,7 @@ The current version exposes Properties, allowing you to read their values as wel
 It has a sped-up version of the .Net built-in `Activator.CreateInstance`: `TypeInstantiator.CreateInstance`.
 This is archived by reflecting types just once, and emitting IL to create new dynamic methods. Finally a delegate is cached for these dynamic methods, and invoking these delegates has basically no performance penalty.
 
-It also has an `InstanceBuilder` for instantiating classes and setting properties with private setters to some custom value. I personally use this for Fakes in integration tests, when Mocks don't cut it.
+It also has an `ObjectBuilder`/`InterfaceObjectBuilder` for instantiating classes/interfaces and setting properties with private setters to some custom value. I personally use this for Fakes in integration tests, when Mocks don't cut it.
 
 Finally there's the `InterfaceImplementationGenerator` which allows you to create implementation classes of interfaces on-the-fly. This can be quite useful for exchanging e.g. JSON based messages.
 
@@ -39,9 +39,9 @@ accessor.Properties["Username"].SetValue("New username");
 ## For instantiating types
 Simply call `TypeInstantiator.CreateInstance(someType)` similar to how you would with `Activator.CreateInstance` - it's that simple :-)
 
-Or if you need to populate properties with public getters but private setters, use the `InstanceBuilder` like this:
+Or if you need to populate properties with public getters but private setters, use the `ObjectBuilder` like this:
 ```
-var instance = new InstanceBuilder<YourType>()
+var instance = new ObjectBuilder<YourType>()
                 .With(inst => inst.Id, Guid.NewGuid()) // The Id property will be set to Guid.NewGuid()
                 .With(inst => inst.Name, "Some name") // Likewise Name will be set to "Some name"
                 .Build();
@@ -58,7 +58,7 @@ Simply specify an interface with only the getters, and use `GenerateImplementati
 Furthermore if you want to build an instance of your interface, with predefined values (quite useful for unit testing), use the `InterfaceObjectBuilder` in the same fashion as the "ordinary" `ObjectBuilder`:
 
 ```
-var instance = new InstanceBuilder<IYourInterface>()
+var instance = new InterfaceObjectBuilder<IYourInterface>()
                 .With(inst => inst.Id, Guid.NewGuid()) // The Id property will be set to Guid.NewGuid()
                 .With(inst => inst.Name, "Some name") // Likewise Name will be set to "Some name"
                 .Build();
