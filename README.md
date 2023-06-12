@@ -54,3 +54,12 @@ This will generate an implementation type for the interface (and instantiate an 
 This can be quite useful when sending e.g. JSON serialized messages where you don't want to share the implementation class, but rather just the interface.
 It can also be useful for situations where your class has private setters and you want to maintain that. 
 Simply specify an interface with only the getters, and use `GenerateImplementationType<T>` to implement a class with a public setter that allows you to deserialize the JSON, yet doesn't allow the caller to mutate the resulting instance.
+
+Furthermore if you want to build an instance of your interface, with predefined values (quite useful for unit testing), use the `InterfaceObjectBuilder` in the same fashion as the "ordinary" `ObjectBuilder`:
+
+```
+var instance = new InstanceBuilder<IYourInterface>()
+                .With(inst => inst.Id, Guid.NewGuid()) // The Id property will be set to Guid.NewGuid()
+                .With(inst => inst.Name, "Some name") // Likewise Name will be set to "Some name"
+                .Build();
+```

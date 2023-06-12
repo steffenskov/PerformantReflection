@@ -1,0 +1,1 @@
+- Consider a better way of dealing with interfaces within TypePropertyCache (right now Get+Set methods are simply foregone)

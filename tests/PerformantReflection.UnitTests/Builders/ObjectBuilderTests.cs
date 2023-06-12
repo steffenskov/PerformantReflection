@@ -1,4 +1,6 @@
-namespace PerformantReflection.UnitTests;
+using PerformantReflection.Builders;
+
+namespace PerformantReflection.UnitTests.Builders;
 
 public class ObjectBuilderTests
 {
@@ -7,14 +9,14 @@ public class ObjectBuilderTests
 		public Guid Id { get; private set; }
 		public string? Name { get; private set; }
 	}
-	
+
 	[Fact]
 	public void With_PropertyName_Valid()
 	{
 		// Arrange
 		var builder = new ObjectBuilder<Fake>();
 		var id = Guid.NewGuid();
-		
+
 		// Act
 		builder.With(instance => instance.Id, id);
 		var result = builder.Build();
@@ -22,7 +24,7 @@ public class ObjectBuilderTests
 		// Assert
 		Assert.Equal(id, result.Id);
 	}
-	
+
 	[Fact]
 	public void With_AnonymousType_Throws()
 	{
@@ -30,9 +32,8 @@ public class ObjectBuilderTests
 		var builder = new ObjectBuilder<Fake>();
 
 		// Act && Assert
-		var ex = Assert.Throws<NotSupportedException>(() =>  builder.With(instance => new { instance.Name }, null));
-		
+		var ex = Assert.Throws<NotSupportedException>(() => builder.With(instance => new { instance.Name }, null));
+
 		Assert.Equal("Unsupported node type: New", ex.Message);
 	}
 }
-

@@ -36,6 +36,17 @@ public class InterfaceImplementationGeneratorTests
 		Assert.Equal("Hello world", implementation.Name);
 		Assert.Equal(Guid.Empty, implementation.Id);
 	}
+	
+	[Fact]
+	public void CreateInstance_InterfaceImplementsOtherInterface_InstanceIsCreatedWithAllProperties()
+	{
+		// Act
+		var implementation = InterfaceImplementationGenerator.CreateInstance<IExtendedInterface>();
+
+		// Assert
+		Assert.Null( implementation.Name);
+		Assert.Equal(Guid.Empty, implementation.Id);
+	}
 
 	[Fact]
 	public void CreateInstance_InternalInterfaceType_Throws()
@@ -88,6 +99,16 @@ public interface IValidInterface
 {
 	string Name { get; set; }
 	Guid Id { get; }
+}
+
+public interface IBaseInterface
+{
+	Guid Id { get; }
+}
+
+public interface IExtendedInterface : IBaseInterface
+{
+	string Name { get; }
 }
 
 public interface IInterfaceWithMethods

@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
@@ -66,18 +67,25 @@ namespace PerformantReflection
 
 			var tb = _moduleBuilder.DefineType($"{type.Name}Implementation{GenerateStrippedGuid()}", TypeAttributes.Public);
 			tb.AddInterfaceImplementation(type);
-			CreateProperties(type, tb);
+			CreateProperties(type, tb, new HashSet<Type>());
 
 			return tb.CreateType()!;
 		}
 
-		private static void CreateProperties(Type type, TypeBuilder typeBuilder)
+		private static void CreateProperties(Type type, TypeBuilder typeBuilder, ISet<Type> mappedTypes)
 		{
+			if (mappedTypes.Contains(type))
+				return;
+			mappedTypes.Add(type);
 			var properties = type.GetProperties(BindingFlags.Public | BindingFlags.Instance);
 
 			foreach (var prop in properties)
 			{
 				CreateProperty(typeBuilder, prop);
+			}
+			foreach (var implementedInterfaceType in type.GetInterfaces())
+			{
+				CreateProperties(implementedInterfaceType, typeBuilder, mappedTypes);
 			}
 		}
 
@@ -99,7 +107,7 @@ namespace PerformantReflection
 				propVisibility,
 				propertyType,
 				Type.EmptyTypes);
-			
+
 			var getMethodIlGenerator = getMethod.GetILGenerator();
 
 			getMethodIlGenerator.Emit(OpCodes.Ldarg_0);
@@ -126,11 +134,11 @@ namespace PerformantReflection
 			// their corresponding behaviors, "get" and "set" respectively.
 			propertyBuilder.SetGetMethod(getMethod);
 			propertyBuilder.SetSetMethod(setMethod);
-			
-			
+
+
 			// Associate the interface property accessors with the implementation methods
 			var interfaceMethods = prop.GetAccessors();
-			var interfaceGetterMethod= interfaceMethods.FirstOrDefault(method => method.ReturnType != typeof(void));
+			var interfaceGetterMethod = interfaceMethods.FirstOrDefault(method => method.ReturnType != typeof(void));
 			var interfaceSetterMethod = interfaceMethods.FirstOrDefault(method => method.ReturnType == typeof(void));
 
 			if (interfaceGetterMethod is not null)
