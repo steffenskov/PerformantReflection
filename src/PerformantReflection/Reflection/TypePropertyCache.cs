@@ -36,7 +36,7 @@ namespace PerformantReflection.Reflection
 			}
 		}
 
-		private static IReadOnlyCollection<PropertyInformation> CreatePropertyInformationCollection(Type type, ISet<Type> mappedTypes)
+		private static IReadOnlyCollection<PropertyInformation> CreatePropertyInformationCollection(Type type, ISet<Type> mappedTypes, bool typeIsNestedInterface = false)
 		{
 			var result = new List<PropertyInformation>();
 			if (mappedTypes.Contains(type))
@@ -50,11 +50,11 @@ namespace PerformantReflection.Reflection
 			{
 				result.Add(new PropertyInformation(property.Name, false, property.Type, property.Getter, property.Setter));
 			}
-			if (type.IsInterface)
+			if (type.IsInterface && !typeIsNestedInterface)
 			{
 				foreach (var implementedInterfaceType in type.GetInterfaces())
 				{
-					result.AddRange(CreatePropertyInformationCollection(implementedInterfaceType, mappedTypes));
+					result.AddRange(CreatePropertyInformationCollection(implementedInterfaceType, mappedTypes, typeIsNestedInterface: true));
 				}
 			}
 
