@@ -49,13 +49,13 @@ jobs:
       - name: "Build project"
         run: dotnet build ${{ env.SOLUTION_PATH }} --no-restore --configuration Release
 
-      - name: "Get repository version"
+      - name: "Get version"
         id: version
-        uses: bbonkr/get-version-action@v1.0.5
+        uses: bbonkr/get-version-action@v1.2.0
         with:
           project: ${{ env.PROJECT_PATH }}
 
-      - name: "Pack Repository"
+      - name: "Pack"
         run: dotnet pack ${{ env.PROJECT_PATH }} --no-restore --no-build --configuration Release --include-symbols -p:SymbolPackageFormat=snupkg -p:PackageVersion=${{ steps.version.outputs.version }} --output ${{ env.PACKAGE_OUTPUT_DIRECTORY }}
 
       - name: "Push package"
