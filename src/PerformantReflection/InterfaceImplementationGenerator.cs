@@ -33,9 +33,18 @@ namespace PerformantReflection
 		/// <exception cref="InvalidOperationException">Type T is invalid</exception>
 		public static T CreateInstance<T>()
 		{
-			var implementationType = GenerateImplementationType<T>();
-			return (T)TypeInstantiator.CreateInstance(implementationType);
+			return (T)CreateInstance(typeof(T));
 		}
+
+                /// <summary>
+                /// Generates an implementation class for the interface of the type given and returns an instance of it.
+                /// </summary>
+                /// <exception cref="InvalidOperationException">Type is invalid</exception>
+                public static object CreateInstance(Type type)
+                {
+                        var implementationType = GenerateImplementationType(type);
+                        return TypeInstantiator.CreateInstance(implementationType);
+                }
 
 		/// <summary>
 		/// Generates an implementation class for the interface of type T and returns its type.
@@ -45,17 +54,26 @@ namespace PerformantReflection
 		/// <exception cref="InvalidOperationException">Type T is invalid</exception>
 		public static Type GenerateImplementationType<T>()
 		{
-			var type = typeof(T);
-			if (!type.IsInterface)
-			{
-				throw new InvalidOperationException("Type T must be an interface");
-			}
-			if (!type.IsVisible)
-			{
-				throw new InvalidOperationException("Type T must be public");
-			}
-			return _implementationTypeMap.GetOrAdd(type, CreateImplementationType);
+			return GenerateImplementationType(typeof(T));
 		}
+
+                /// <summary>
+                /// Generates an implementation class for the interface of the type given returns its type.
+                /// </summary>
+                /// <exception cref="InvalidOperationException">Type is invalid</exception>
+                public static Type GenerateImplementationType(Type type)
+                {
+                        if (!type.IsInterface)
+                        {
+                                throw new InvalidOperationException("Type T must be an interface");
+                        }
+                        if (!type.IsVisible)
+                        {
+                                throw new InvalidOperationException("Type T must be public");
+                        }
+                        return _implementationTypeMap.GetOrAdd(type, CreateImplementationType);
+                }
+
 
 		private static Type CreateImplementationType(Type type)
 		{
