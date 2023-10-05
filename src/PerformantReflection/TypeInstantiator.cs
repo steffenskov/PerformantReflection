@@ -10,24 +10,27 @@ namespace PerformantReflection
 		private static readonly LockedConcurrentDictionary<Type, Func<object>> _constructors = new();
 
 		/// <summary>
-		/// Creates a new instance of the given type.
-		/// Requires the type to have a default constructor. 
+		///     Creates a new instance of the given type.
+		///     Requires the type to have a default constructor.
 		/// </summary>
 		/// <typeparam name="T">Type to create an instance of.</typeparam>
 		public static T CreateInstance<T>()
 		{
 			return (T)CreateInstance(typeof(T));
 		}
-		
+
 		/// <summary>
-		/// Creates a new instance of the given type.
-		/// Requires the type to have a default constructor.
+		///     Creates a new instance of the given type.
+		///     Requires the type to have a default constructor.
 		/// </summary>
 		/// <param name="type">Type to create an instance of.</param>
 		public static object CreateInstance(Type type)
 		{
 			if (type.IsValueType)
-				return Activator.CreateInstance(type)!; // Value types don't necessarily have a proper default constructor for the IL generation to work, so this is a safe workaround albeit slower than IL.
+				return
+					Activator.CreateInstance(
+						type)
+					!; // Value types don't necessarily have a proper default constructor for the IL generation to work, so this is a safe workaround albeit slower than IL.
 
 			var ctor = _constructors.GetOrAdd(type, CreateConstructorDelegate);
 			return ctor();

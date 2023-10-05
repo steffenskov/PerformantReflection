@@ -5,8 +5,8 @@ using PerformantReflection.Reflection;
 namespace PerformantReflection.Builders
 {
 	public abstract class BaseObjectBuilder<TSelf, TObject>
-	where TSelf : BaseObjectBuilder<TSelf, TObject>
-	where TObject : notnull
+		where TSelf : BaseObjectBuilder<TSelf, TObject>
+		where TObject : notnull
 	{
 		private readonly ObjectAccessor _accessor;
 		private readonly TObject _result;

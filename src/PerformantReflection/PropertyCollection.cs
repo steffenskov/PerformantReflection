@@ -4,27 +4,21 @@ using System.Linq;
 
 namespace PerformantReflection
 {
-
 	/// <summary>
-	/// Exposes all the properties of a single object.
+	///     Exposes all the properties of a single object.
 	/// </summary>
 	public class PropertyCollection : IReadOnlyCollection<PropertyAccessor>
 	{
 		private readonly IDictionary<string, PropertyAccessor> _accessors;
-
-		public int Count => _accessors.Count;
-
-		public PropertyAccessor this[string index] => _accessors[index];
 
 		internal PropertyCollection(IEnumerable<PropertyAccessor> accessors)
 		{
 			_accessors = accessors.ToDictionary(accessor => accessor.Name);
 		}
 
-		public bool TryGetValue(string propertyName, out PropertyAccessor? accessor)
-		{
-			return _accessors.TryGetValue(propertyName, out accessor);
-		}
+		public PropertyAccessor this[string index] => _accessors[index];
+
+		public int Count => _accessors.Count;
 
 		public IEnumerator<PropertyAccessor> GetEnumerator()
 		{
@@ -34,6 +28,11 @@ namespace PerformantReflection
 		IEnumerator IEnumerable.GetEnumerator()
 		{
 			return _accessors.Values.GetEnumerator();
+		}
+
+		public bool TryGetValue(string propertyName, out PropertyAccessor? accessor)
+		{
+			return _accessors.TryGetValue(propertyName, out accessor);
 		}
 	}
 }

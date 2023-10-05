@@ -5,14 +5,12 @@ using PerformantReflection.Reflection;
 namespace PerformantReflection
 {
 	/// <summary>
-	/// ObjectAccessor let's you get and set all properties of an object.
+	///     ObjectAccessor let's you get and set all properties of an object.
 	/// </summary>
 	public class ObjectAccessor
 	{
-		public PropertyCollection Properties { get; }
-
 		/// <summary>
-		/// Create a new ObjectAccessor which exposes the properties of the target given.
+		///     Create a new ObjectAccessor which exposes the properties of the target given.
 		/// </summary>
 		/// <param name="target">Target object to access properties of.</param>
 		/// <param name="includePrivateProperties">Whether to include private properties or not.</param>
@@ -23,10 +21,11 @@ namespace PerformantReflection
 
 			var properties = TypePropertyCache.GetPropertiesOfType(target.GetType(), includePrivateProperties);
 			var accessors = properties
-									.Select(property => new PropertyAccessor(target, property));
+				.Select(property => new PropertyAccessor(target, property));
 
 			Properties = new PropertyCollection(accessors);
 		}
-	}
 
+		public PropertyCollection Properties { get; }
+	}
 }

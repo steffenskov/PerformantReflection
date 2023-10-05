@@ -8,8 +8,8 @@ using PerformantReflection.Collections;
 namespace PerformantReflection
 {
 	/// <summary>
-	/// Used for generating and instantiating implementation classes for interfaces.
-	/// The interface in question must only contain properties and must be public.
+	///     Used for generating and instantiating implementation classes for interfaces.
+	///     The interface in question must only contain properties and must be public.
 	/// </summary>
 	public static class InterfaceImplementationGenerator
 	{
@@ -26,7 +26,7 @@ namespace PerformantReflection
 		}
 
 		/// <summary>
-		/// Generates an implementation class for the interface of type T and returns an instance of it.
+		///     Generates an implementation class for the interface of type T and returns an instance of it.
 		/// </summary>
 		/// <typeparam name="T">Interface type to generation implementation for</typeparam>
 		/// <returns></returns>
@@ -36,18 +36,18 @@ namespace PerformantReflection
 			return (T)CreateInstance(typeof(T));
 		}
 
-                /// <summary>
-                /// Generates an implementation class for the interface of the type given and returns an instance of it.
-                /// </summary>
-                /// <exception cref="InvalidOperationException">Type is invalid</exception>
-                public static object CreateInstance(Type type)
-                {
-                        var implementationType = GenerateImplementationType(type);
-                        return TypeInstantiator.CreateInstance(implementationType);
-                }
+		/// <summary>
+		///     Generates an implementation class for the interface of the type given and returns an instance of it.
+		/// </summary>
+		/// <exception cref="InvalidOperationException">Type is invalid</exception>
+		public static object CreateInstance(Type type)
+		{
+			var implementationType = GenerateImplementationType(type);
+			return TypeInstantiator.CreateInstance(implementationType);
+		}
 
 		/// <summary>
-		/// Generates an implementation class for the interface of type T and returns its type.
+		///     Generates an implementation class for the interface of type T and returns its type.
 		/// </summary>
 		/// <typeparam name="T">Interface type to generation implementation for</typeparam>
 		/// <returns></returns>
@@ -57,31 +57,22 @@ namespace PerformantReflection
 			return GenerateImplementationType(typeof(T));
 		}
 
-                /// <summary>
-                /// Generates an implementation class for the interface of the type given returns its type.
-                /// </summary>
-                /// <exception cref="InvalidOperationException">Type is invalid</exception>
-                public static Type GenerateImplementationType(Type type)
-                {
-                        if (!type.IsInterface)
-                        {
-                                throw new InvalidOperationException("Type T must be an interface");
-                        }
-                        if (!type.IsVisible)
-                        {
-                                throw new InvalidOperationException("Type T must be public");
-                        }
-                        return _implementationTypeMap.GetOrAdd(type, CreateImplementationType);
-                }
+		/// <summary>
+		///     Generates an implementation class for the interface of the type given returns its type.
+		/// </summary>
+		/// <exception cref="InvalidOperationException">Type is invalid</exception>
+		public static Type GenerateImplementationType(Type type)
+		{
+			if (!type.IsInterface) throw new InvalidOperationException("Type T must be an interface");
+			if (!type.IsVisible) throw new InvalidOperationException("Type T must be public");
+			return _implementationTypeMap.GetOrAdd(type, CreateImplementationType);
+		}
 
 
 		private static Type CreateImplementationType(Type type)
 		{
 			var methods = type.GetMethods();
-			if (methods.Any(m => !m.IsSpecialName))
-			{
-				throw new InvalidOperationException("Cannot create an implementation for an interface that contains methods");
-			}
+			if (methods.Any(m => !m.IsSpecialName)) throw new InvalidOperationException("Cannot create an implementation for an interface that contains methods");
 
 			var tb = _moduleBuilder.DefineType($"{type.Name}Implementation{GenerateStrippedGuid()}", TypeAttributes.Public);
 			tb.AddInterfaceImplementation(type);
@@ -97,14 +88,8 @@ namespace PerformantReflection
 			mappedTypes.Add(type);
 			var properties = type.GetProperties(BindingFlags.Public | BindingFlags.Instance);
 
-			foreach (var prop in properties)
-			{
-				CreateProperty(typeBuilder, prop);
-			}
-			foreach (var implementedInterfaceType in type.GetInterfaces())
-			{
-				CreateProperties(implementedInterfaceType, typeBuilder, mappedTypes);
-			}
+			foreach (var prop in properties) CreateProperty(typeBuilder, prop);
+			foreach (var implementedInterfaceType in type.GetInterfaces()) CreateProperties(implementedInterfaceType, typeBuilder, mappedTypes);
 		}
 
 		private static void CreateProperty(TypeBuilder typeBuilder, PropertyInfo prop)
@@ -159,14 +144,8 @@ namespace PerformantReflection
 			var interfaceGetterMethod = interfaceMethods.FirstOrDefault(method => method.ReturnType != typeof(void));
 			var interfaceSetterMethod = interfaceMethods.FirstOrDefault(method => method.ReturnType == typeof(void));
 
-			if (interfaceGetterMethod is not null)
-			{
-				typeBuilder.DefineMethodOverride(getMethod, interfaceGetterMethod);
-			}
-			if (interfaceSetterMethod is not null)
-			{
-				typeBuilder.DefineMethodOverride(setMethod, interfaceSetterMethod);
-			}
+			if (interfaceGetterMethod is not null) typeBuilder.DefineMethodOverride(getMethod, interfaceGetterMethod);
+			if (interfaceSetterMethod is not null) typeBuilder.DefineMethodOverride(setMethod, interfaceSetterMethod);
 		}
 
 		private static string GenerateStrippedGuid()
