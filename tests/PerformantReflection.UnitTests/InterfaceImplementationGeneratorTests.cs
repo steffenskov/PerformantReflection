@@ -13,8 +13,8 @@ public class InterfaceImplementationGeneratorTests
 			Id = Guid.NewGuid(),
 			Name = "Some name"
 		};
-		var json = JsonSerializer.Serialize(customer); 
-		
+		var json = JsonSerializer.Serialize(customer);
+
 		// Act
 		var implementationType = InterfaceImplementationGenerator.GenerateImplementationType<ICustomer>();
 		var deserializedCustomer = (ICustomer)JsonSerializer.Deserialize(json, implementationType)!;
@@ -24,7 +24,17 @@ public class InterfaceImplementationGeneratorTests
 		Assert.Equal(customer.Id, deserializedCustomer!.Id);
 		Assert.Equal(customer.Name, deserializedCustomer.Name);
 	}
-	
+
+	[Fact]
+	public void GenerateImplementationType_InterfaceHasInterfaceProperty_PropertyRemainsAnInterface()
+	{
+		// Act
+		var implementationType = InterfaceImplementationGenerator.GenerateImplementationType<IWithInterfaceProperty>();
+
+		// Assert
+		Assert.Equal(typeof(IVatNumber), implementationType.GetProperty(nameof(IWithInterfaceProperty.Vat))!.PropertyType);
+	}
+
 	[Fact]
 	public void CreateInstance_ValidInterfaceType_InstanceIsCreated()
 	{
@@ -36,7 +46,7 @@ public class InterfaceImplementationGeneratorTests
 		Assert.Equal("Hello world", implementation.Name);
 		Assert.Equal(Guid.Empty, implementation.Id);
 	}
-	
+
 	[Fact]
 	public void CreateInstance_InterfaceImplementsOtherInterface_InstanceIsCreatedWithAllProperties()
 	{
@@ -44,7 +54,7 @@ public class InterfaceImplementationGeneratorTests
 		var implementation = InterfaceImplementationGenerator.CreateInstance<IExtendedInterface>();
 
 		// Assert
-		Assert.Null( implementation.Name);
+		Assert.Null(implementation.Name);
 		Assert.Equal(Guid.Empty, implementation.Id);
 	}
 
@@ -87,12 +97,10 @@ public class InterfaceImplementationGeneratorTests
 
 public struct AStruct
 {
-	
 }
 
 public class AClass
 {
-	
 }
 
 public interface IValidInterface
@@ -114,13 +122,12 @@ public interface IExtendedInterface : IBaseInterface
 public interface IInterfaceWithMethods
 {
 	string Name { get; }
-	
+
 	string ToString();
 }
 
 internal interface IInternalInterface
 {
-
 }
 
 public interface ICustomer
@@ -132,5 +139,24 @@ public interface ICustomer
 public class Customer : ICustomer
 {
 	public string Name { get; set; } = default!;
-	public Guid Id { get; set;  }
+	public Guid Id { get; set; }
+}
+
+public interface IWithInterfaceProperty
+{
+	public IVatNumber Vat { get; }
+}
+
+public interface IVatNumber
+{
+}
+
+public class WithInterfaceProperty : IWithInterfaceProperty
+{
+	public IVatNumber Vat { get; set; } = default!;
+}
+
+public class DKVatNumber : IVatNumber
+{
+	public int Value { get; set; }
 }
