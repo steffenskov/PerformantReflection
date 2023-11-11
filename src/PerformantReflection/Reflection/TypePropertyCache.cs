@@ -57,11 +57,13 @@ namespace PerformantReflection.Reflection
 		{
 			var method = property.GetGetMethod(true);
 			if (method == null) return null;
+			if (property.DeclaringType is null)
+				return null;
 
-			var dm = new DynamicMethod($"__get_{property.Name}", typeof(object), new[] { typeof(object) }, property.DeclaringType!);
+			var dm = new DynamicMethod($"__get_{property.Name}", typeof(object), new[] { typeof(object) }, property.DeclaringType);
 			var il = dm.GetILGenerator();
 			il.Emit(OpCodes.Ldarg_0);
-			il.Emit(OpCodes.Castclass, property.DeclaringType!);
+			il.Emit(property.DeclaringType.IsValueType ? OpCodes.Unbox : OpCodes.Castclass, property.DeclaringType);
 			il.Emit(OpCodes.Callvirt, method);
 			if (property.PropertyType.IsValueType) il.Emit(OpCodes.Box, property.PropertyType);
 			il.Emit(OpCodes.Ret);
@@ -72,16 +74,18 @@ namespace PerformantReflection.Reflection
 		{
 			var method = property.GetSetMethod(true);
 			if (method == null) return null;
+			if (property.DeclaringType is null)
+				return null;
 
-			var dm = new DynamicMethod($"__set_{property.Name}", null, new[] { typeof(object), typeof(object) }, property.DeclaringType!);
+			if (property.DeclaringType.IsValueType)
+				return null;
+			
+			var dm = new DynamicMethod($"__set_{property.Name}", null, new[] { typeof(object), typeof(object) }, property.DeclaringType);
 			var il = dm.GetILGenerator();
 			il.Emit(OpCodes.Ldarg_0);
-			il.Emit(OpCodes.Castclass, property.DeclaringType!);
+			il.Emit(property.DeclaringType.IsValueType ? OpCodes.Unbox : OpCodes.Castclass, property.DeclaringType);
 			il.Emit(OpCodes.Ldarg_1);
-			if (property.PropertyType.IsValueType)
-				il.Emit(OpCodes.Unbox_Any, property.PropertyType);
-			else
-				il.Emit(OpCodes.Castclass, property.PropertyType);
+			il.Emit(property.PropertyType.IsValueType ? OpCodes.Unbox_Any : OpCodes.Castclass, property.PropertyType);
 			il.Emit(OpCodes.Callvirt, method!);
 			il.Emit(OpCodes.Ret);
 			return (Action<object, object?>)dm.CreateDelegate(typeof(Action<object, object?>));

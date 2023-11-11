@@ -1,5 +1,3 @@
-using Xunit.Sdk;
-
 namespace PerformantReflection.UnitTests;
 
 public class ObjectAccessorTests
@@ -90,7 +88,7 @@ public class ObjectAccessorTests
 	{
 		// Arrange
 		var obj = new ObjectWithPrivateProperties();
-		var accessor = new ObjectAccessor(obj, includePrivateProperties: true);
+		var accessor = new ObjectAccessor(obj, true);
 
 		// Act
 		var propertyCount = accessor.Properties.Count;
@@ -125,12 +123,33 @@ public class ObjectAccessorTests
 	{
 		// Arrange
 		var obj = new ObjectWithMixedPropertyVisibility();
-		var accessor = new ObjectAccessor(obj, includePrivateProperties: true);
+		var accessor = new ObjectAccessor(obj, true);
 
 		// Act
 		var properties = accessor.Properties.ToDictionary(prop => prop.Name);
 
 		// Assert
 		Assert.Contains(nameof(obj.InternalInitProperty), properties.Keys);
+	}
+
+	[Fact]
+	public void Properties_KeyValuePairObject_CanRead()
+	{
+		// Arrange
+		var obj = new KeyValuePair<int, string>(42, "Hello world");
+
+		var accessor = new ObjectAccessor(obj);
+
+		// Act
+		var oldFashionedKey = obj.GetType().GetProperty("Key")!.GetValue(obj);
+		var oldFashionedValue = obj.GetType().GetProperty("Value")!.GetValue(obj);
+		var key = accessor.Properties[nameof(obj.Key)].GetValue();
+		var value = accessor.Properties[nameof(obj.Value)].GetValue();
+
+		// Assert
+		Assert.Equal(obj.Key, oldFashionedKey);
+		Assert.Equal(obj.Value, oldFashionedValue);
+		Assert.Equal(obj.Key, key);
+		Assert.Equal(obj.Value, value);
 	}
 }
