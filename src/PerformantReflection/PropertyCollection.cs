@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 
 namespace PerformantReflection
@@ -30,7 +31,7 @@ namespace PerformantReflection
 			return _accessors.Values.GetEnumerator();
 		}
 
-		public bool TryGetValue(string propertyName, out PropertyAccessor? accessor)
+		public bool TryGetValue(string propertyName, [MaybeNullWhen(returnValue:false)] out PropertyAccessor accessor)
 		{
 			return _accessors.TryGetValue(propertyName, out accessor);
 		}
