@@ -95,3 +95,32 @@ var instance = new InterfaceObjectBuilder<IYourInterface>()
                 .With(inst => inst.Name, "Some name") // Likewise Name will be set to "Some name"
                 .Build();
 ```
+
+## For Json deserialization of properties with private setters
+
+Either use the `JsonSerializerOptionsFactory` class to create a new `JsonSerializerOptions` instance with the necessary
+configuration, or use the extension method `AddPrivateDeserializationSupport` of  `JsonSerializerOptions` to configure
+an existing options instance.
+Both reside in the `PerformantReflection.Json` namespace.
+
+An example:
+
+```
+public class User
+{
+    public Guid Id { get; private set; }
+    
+    public User()
+    {
+        Id = Guid.NewGuid();
+    }
+}
+
+var user = new User();
+var json = JsonSerializer.Serialize(user);
+
+var options = JsonSerializerOptionsFactory.CreateOptionsWithPrivateDeserializationSupport();
+var deserialized = JsonSerializer.Deserialize<User>(json, options);
+
+// deserialized will have the Id deserialized as well now
+```
