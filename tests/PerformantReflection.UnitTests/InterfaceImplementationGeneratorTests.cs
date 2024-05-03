@@ -36,6 +36,43 @@ public class InterfaceImplementationGeneratorTests
 	}
 
 	[Fact]
+	public void GenerateImplementationType_WithExplicitImplementation_DoesNotGeneratePropertiesForExplicitImplementations()
+	{
+		// Act
+		var implementationType = InterfaceImplementationGenerator.GenerateImplementationType<IWithExplicitImplementation>();
+
+		// Assert
+		Assert.Null(implementationType.GetProperty(nameof(IWithExplicitImplementation.Title)));
+		Assert.NotNull(implementationType.GetProperty(nameof(IWithExplicitImplementation.Name)));
+	}
+
+	[Fact]
+	public void GenerateImplementationType_WithExplicitImplementationOfImplementedInterface_DoesNotGeneratePropertiesForExplicitImplementations()
+	{
+		// Act
+		var implementationType = InterfaceImplementationGenerator.GenerateImplementationType<IWithExplicitOtherImplementation>();
+
+		// Assert
+		Assert.Null(implementationType.GetProperty(nameof(IWithExplicitOtherImplementation.Name)));
+		Assert.NotNull(implementationType.GetProperty(nameof(IWithExplicitOtherImplementation.Id)));
+		Assert.NotNull(implementationType.GetProperty(nameof(IWithExplicitOtherImplementation.Title)));
+
+	}
+
+	[Fact]
+	public void GenerateImplementationType_WithExplicitImplementationOfHiearchy_DoesNotGeneratePropertiesForExplicitImplementations()
+	{
+		// Act
+		var implementationType = InterfaceImplementationGenerator.GenerateImplementationType<IWithExplicitImplementationHierarchy>();
+
+		// Assert
+		Assert.Null(implementationType.GetProperty(nameof(IWithExplicitImplementationHierarchy.Name)));
+		Assert.Null(implementationType.GetProperty(nameof(IWithExplicitImplementationHierarchy.Id)));
+		Assert.NotNull(implementationType.GetProperty(nameof(IWithExplicitImplementationHierarchy.Title)));
+
+	}
+
+	[Fact]
 	public void CreateInstance_ValidInterfaceType_InstanceIsCreated()
 	{
 		// Act
@@ -159,4 +196,21 @@ public class WithInterfaceProperty : IWithInterfaceProperty
 public class DKVatNumber : IVatNumber
 {
 	public int Value { get; set; }
+}
+
+public interface IWithExplicitImplementation
+{
+	string Name { get; }
+	string Title => Name;
+}
+
+public interface IWithExplicitOtherImplementation : ICustomer
+{
+	string Title { get; }
+	string ICustomer.Name => Title;
+}
+
+public interface IWithExplicitImplementationHierarchy : IWithExplicitOtherImplementation
+{
+	Guid ICustomer.Id => Guid.NewGuid();
 }
