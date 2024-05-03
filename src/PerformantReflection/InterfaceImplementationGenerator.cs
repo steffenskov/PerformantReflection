@@ -80,29 +80,44 @@ public static class InterfaceImplementationGenerator
 
 		var tb = _moduleBuilder.DefineType($"{type.Name}Implementation{GenerateStrippedGuid()}", TypeAttributes.Public);
 		tb.AddInterfaceImplementation(type);
-		CreateProperties(type, tb, new HashSet<Type>());
+		CreateProperties(type, tb, new HashSet<Type>(), new HashSet<string>());
 
 		return tb.CreateType()!;
 	}
 
-	private static void CreateProperties(Type type, TypeBuilder typeBuilder, ISet<Type> mappedTypes)
+	private static void CreateProperties(Type type, TypeBuilder typeBuilder, ISet<Type> mappedTypes, ISet<string> excludedProperties)
 	{
-		if (mappedTypes.Contains(type))
+		if (!mappedTypes.Add(type))
 		{
 			return;
 		}
 
-		mappedTypes.Add(type);
-		var properties = type.GetProperties(BindingFlags.Public | BindingFlags.Instance);
+
+		var properties = type.GetProperties(BindingFlags.Public | BindingFlags.Instance );
 
 		foreach (var prop in properties)
 		{
+			if (prop is { CanWrite: false, GetMethod.IsAbstract: false }) // Get only property with explicit implementation, skip those
+			{
+				continue;
+			}
+
+			var fullPropertyName = $"{prop.DeclaringType?.FullName}.{prop.Name}";
+			if (excludedProperties.Contains(fullPropertyName))
+				continue;
+
 			CreateProperty(typeBuilder, prop);
+		}
+
+		var explicitProperties = type.GetProperties(BindingFlags.NonPublic | BindingFlags.Instance);
+		foreach (var prop in explicitProperties)
+		{
+			excludedProperties.Add(prop.Name);
 		}
 
 		foreach (var implementedInterfaceType in type.GetInterfaces())
 		{
-			CreateProperties(implementedInterfaceType, typeBuilder, mappedTypes);
+			CreateProperties(implementedInterfaceType, typeBuilder, mappedTypes, excludedProperties);
 		}
 	}
 
