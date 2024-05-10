@@ -4,6 +4,10 @@ on:
   push:
     branches: [main]
 
+concurrency:
+  group: nuget-${{ github.ref }}
+  cancel-in-progress: true
+
 env:
   PROJECT_PATH: "src/PerformantReflection/PerformantReflection.csproj"
   SOLUTION_PATH: "PerformantReflection.sln"
@@ -17,10 +21,10 @@ jobs:
 
     steps:
       - name: "Checkout"
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: "Install dotnet"
-        uses: actions/setup-dotnet@v2
+        uses: actions/setup-dotnet@v4
         with:
           dotnet-version: 8.0.x
 
@@ -36,10 +40,10 @@ jobs:
 
     steps:
       - name: "Checkout"
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: "Install dotnet"
-        uses: actions/setup-dotnet@v2
+        uses: actions/setup-dotnet@v4
         with:
           dotnet-version: 8.0.x
 
@@ -49,14 +53,8 @@ jobs:
       - name: "Build project"
         run: dotnet build ${{ env.SOLUTION_PATH }} --no-restore --configuration Release
 
-      - name: "Get version"
-        id: version
-        uses: bbonkr/get-version-action@v1.2.0
-        with:
-          project: ${{ env.PROJECT_PATH }}
-
       - name: "Pack"
-        run: dotnet pack ${{ env.PROJECT_PATH }} --no-restore --no-build --configuration Release --include-symbols -p:SymbolPackageFormat=snupkg -p:PackageVersion=${{ steps.version.outputs.version }} --output ${{ env.PACKAGE_OUTPUT_DIRECTORY }}
+        run: dotnet pack ${{ env.PROJECT_PATH }} --no-restore --no-build --configuration Release --include-symbols -p:SymbolPackageFormat=snupkg --output ${{ env.PACKAGE_OUTPUT_DIRECTORY }}
 
       - name: "Push package"
         run: dotnet nuget push ${{ env.PACKAGE_OUTPUT_DIRECTORY }}/*.nupkg -k ${{ secrets.NUGET_API_KEY }} -s ${{ env.NUGET_SOURCE_URL }} --skip-duplicate
