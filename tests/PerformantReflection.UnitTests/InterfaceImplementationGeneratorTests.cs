@@ -69,7 +69,16 @@ public class InterfaceImplementationGeneratorTests
 		Assert.Null(implementationType.GetProperty(nameof(IWithExplicitImplementationHierarchy.Name)));
 		Assert.Null(implementationType.GetProperty(nameof(IWithExplicitImplementationHierarchy.Id)));
 		Assert.NotNull(implementationType.GetProperty(nameof(IWithExplicitImplementationHierarchy.Title)));
+	}
 
+	[Fact]
+	public void GenerateImplementationType_InterfaceHasNewProperty_PropertyIncluded()
+	{
+		// Act
+		var implementationType = InterfaceImplementationGenerator.GenerateImplementationType<IWriteTooInterface>();
+
+		// Assert
+		Assert.NotNull(implementationType.GetProperty(nameof(IWriteTooInterface.Id)));
 	}
 
 	[Fact]
@@ -213,4 +222,14 @@ public interface IWithExplicitOtherImplementation : ICustomer
 public interface IWithExplicitImplementationHierarchy : IWithExplicitOtherImplementation
 {
 	Guid ICustomer.Id => Guid.NewGuid();
+}
+
+public interface IGetOnlyInterface
+{
+	Guid Id { get; }
+}
+
+public interface IWriteTooInterface : IGetOnlyInterface
+{
+	new Guid Id { get; protected init; }
 }

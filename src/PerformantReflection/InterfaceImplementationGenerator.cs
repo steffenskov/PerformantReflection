@@ -93,10 +93,11 @@ public static class InterfaceImplementationGenerator
 		}
 
 
-		var properties = type.GetProperties(BindingFlags.Public | BindingFlags.Instance );
+		var properties = type.GetProperties(BindingFlags.Public | BindingFlags.Instance);
 
 		foreach (var prop in properties)
 		{
+			System.Console.WriteLine(prop.Name);
 			if (prop is { CanWrite: false, GetMethod.IsAbstract: false }) // Get only property with explicit implementation, skip those
 			{
 				continue;
