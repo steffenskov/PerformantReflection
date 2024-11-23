@@ -124,3 +124,6 @@ var deserialized = JsonSerializer.Deserialize<User>(json, options);
 
 // deserialized will have the Id deserialized as well now
 ```
+
+# Documentation
+Auto generated documentation via [DocFx](https://github.com/dotnet/docfx) is available here: https://steffenskov.github.io/PerformantReflection/
