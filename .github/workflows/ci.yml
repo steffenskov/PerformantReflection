@@ -31,7 +31,7 @@ jobs:
           dotnet-version: 8.0.x
 
       - name: "Restore packages"
-        run: dotnet restore ${{ env.SOLUTION_PATH }}
+        run: dotnet restore
 
       - name: Test
-        run: dotnet test ${{ env.SOLUTION_PATH }}
+        run: dotnet test
