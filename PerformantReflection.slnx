@@ -1,0 +1,12 @@
+﻿<Solution>
+  <Folder Name="/Solution Items/">
+    <File Path=".editorconfig" />
+    <File Path="Directory.Build.props" />
+  </Folder>
+  <Folder Name="/src/">
+    <Project Path="src\PerformantReflection\PerformantReflection.csproj" Type="Classic C#" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests\PerformantReflection.UnitTests\PerformantReflection.UnitTests.csproj" Type="Classic C#" />
+  </Folder>
+</Solution>
