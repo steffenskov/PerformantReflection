@@ -10,7 +10,7 @@ concurrency:
 
 env:
   PROJECT_PATH: "src/PerformantReflection/PerformantReflection.csproj"
-  SOLUTION_PATH: "PerformantReflection.sln"
+  SOLUTION_PATH: "PerformantReflection.slnx"
   PACKAGE_OUTPUT_DIRECTORY: ${{ github.workspace }}\output
   NUGET_SOURCE_URL: "https://api.nuget.org/v3/index.json"
 
