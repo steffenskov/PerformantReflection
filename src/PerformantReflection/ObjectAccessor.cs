@@ -1,7 +1,7 @@
 namespace PerformantReflection;
 
 /// <summary>
-///     ObjectAccessor let's you get and set all properties of an object.
+///     ObjectAccessor lets you get and set all properties of an object.
 /// </summary>
 public class ObjectAccessor
 {
@@ -34,7 +34,7 @@ public class ObjectAccessor
 }
 
 /// <summary>
-///     ObjectAccessor let's you get and set all properties of an object.
+///     ObjectAccessor lets you get and set all properties of an object.
 /// </summary>
 public class ObjectAccessor<TObject> : ObjectAccessor
 	where TObject : notnull

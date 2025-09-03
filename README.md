@@ -88,8 +88,7 @@ public setter that allows you to deserialize the JSON, yet
 doesn't allow the caller to mutate the resulting instance.
 
 Furthermore if you want to build an instance of your interface, with predefined values (quite useful for unit testing),
-use the `InterfaceObjectBuilder` in the same fashion as
-the "ordinary" `ObjectBuilder`:
+use the `InterfaceObjectBuilder` in the same fashion as the "ordinary" `ObjectBuilder`:
 
 ```
 var instance = new InterfaceObjectBuilder<IYourInterface>()

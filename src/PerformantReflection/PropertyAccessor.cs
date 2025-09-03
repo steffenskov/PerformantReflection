@@ -1,7 +1,7 @@
 ﻿namespace PerformantReflection;
 
 /// <summary>
-///     PropertyAccessor let's you get and set any property of an object.
+///     PropertyAccessor lets you get and set any property of an object.
 /// </summary>
 public class PropertyAccessor
 {
