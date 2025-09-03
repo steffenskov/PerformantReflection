@@ -168,6 +168,20 @@ public class ObjectAccessorTests
 	}
 
 	[Fact]
+	public void SetProperty_ToNull_IsNulled()
+	{
+		// Arrange
+		var obj = new SimpleObject("Steffen", "Some password");
+		var accessor = new ObjectAccessor<SimpleObject>(obj);
+
+		// Act
+		accessor.SetProperty(e => e.Username, null);
+
+		// Assert
+		Assert.Null(obj.Username);
+	}
+
+	[Fact]
 	public void Ctor_NullTarget_Throws()
 	{
 		// Arrange

@@ -48,7 +48,7 @@ public class ObjectAccessor<TObject> : ObjectAccessor
 	{
 	}
 
-	public void SetProperty<TValue>(Expression<Func<TObject, TValue?>> expression, TValue value)
+	public void SetProperty<TValue>(Expression<Func<TObject, TValue?>> expression, TValue? value)
 	{
 		var propertyName = ExpressionParser<TObject>.GetPropertyNameFromExpression(expression);
 		Properties[propertyName].SetValue(value);

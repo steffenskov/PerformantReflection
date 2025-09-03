@@ -128,5 +128,5 @@ var deserialized = JsonSerializer.Deserialize<User>(json, options);
 
 # Documentation
 
-Auto generated documentation via [DocFx](https://github.com/dotnet/docfx) is available
+Auto-generated documentation via [DocFx](https://github.com/dotnet/docfx) is available
 here: https://steffenskov.github.io/PerformantReflection/
