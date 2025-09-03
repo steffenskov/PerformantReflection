@@ -254,10 +254,15 @@ public static class InterfaceImplementationGenerator
 		{
 			ilGenerator.Emit(OpCodes.Ldc_R8, 0.0d);
 		}
-		else if (type == typeof(IntPtr) || type == typeof(UIntPtr))
+		else if (type == typeof(IntPtr))
 		{
 			ilGenerator.Emit(OpCodes.Ldc_I4_0);
 			ilGenerator.Emit(OpCodes.Conv_I);
+		}
+		else if (type == typeof(UIntPtr))
+		{
+			ilGenerator.Emit(OpCodes.Ldc_I4_0);
+			ilGenerator.Emit(OpCodes.Conv_U);
 		}
 		else if (type == typeof(char))
 		{
