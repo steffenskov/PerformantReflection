@@ -28,7 +28,7 @@ needs better.
 
 ## For properties
 
-Simply instantiate an `ObjectAccessor` and feed it the object you want to access.
+Simply create an `ObjectAccessor` and feed it the object you want to access.
 Then you can loop over the `Properties`, index into them with `["PropertyName"]` or use `TryGetValue` if you're unsure
 whether the property even exists:
 
@@ -43,10 +43,12 @@ var user = new User {
 	Username = "Old username"
 };
 
-var accessor = new ObjectAccessor(user);
+var accessor = ObjectAccessor.Create(user);
 
 var existingUsername = accessor.Properties["Username"].GetValue();
 
+accessor.SetProperty(e => e.Username, "New username");
+// OR
 accessor.Properties["Username"].SetValue("New username");
 ```
 
@@ -126,4 +128,6 @@ var deserialized = JsonSerializer.Deserialize<User>(json, options);
 ```
 
 # Documentation
-Auto generated documentation via [DocFx](https://github.com/dotnet/docfx) is available here: https://steffenskov.github.io/PerformantReflection/
+
+Auto generated documentation via [DocFx](https://github.com/dotnet/docfx) is available
+here: https://steffenskov.github.io/PerformantReflection/
