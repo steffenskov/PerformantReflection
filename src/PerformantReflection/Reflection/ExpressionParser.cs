@@ -1,6 +1,6 @@
 namespace PerformantReflection.Reflection;
 
-internal static class ExpressionParser<T>
+static internal class ExpressionParser<T>
 {
 	public static string GetPropertyNameFromExpression<TValue>(Expression<Func<T, TValue?>> expression)
 	{
