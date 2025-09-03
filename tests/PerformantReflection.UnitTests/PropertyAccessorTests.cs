@@ -157,7 +157,7 @@ public class PropertyAccessorTests
 	{
 		// Arrange
 		var obj = new ObjectWithMixedPropertyVisibility();
-		var accessor = new ObjectAccessor(obj, includePrivateProperties: true);
+		var accessor = new ObjectAccessor(obj, true);
 
 		// Act
 		accessor.Properties[nameof(obj.InternalInitProperty)].SetValue(42);

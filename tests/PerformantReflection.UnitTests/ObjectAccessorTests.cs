@@ -152,4 +152,55 @@ public class ObjectAccessorTests
 		Assert.Equal(obj.Key, key);
 		Assert.Equal(obj.Value, value);
 	}
+
+	[Fact]
+	public void SetProperty_PropertyExists_IsSet()
+	{
+		// Arrange
+		var obj = new SimpleObject("Steffen", "Some password");
+		var accessor = new ObjectAccessor<SimpleObject>(obj);
+
+		// Act
+		accessor.SetProperty(e => e.Username, "New name");
+
+		// Assert
+		Assert.Equal("New name", obj.Username);
+	}
+
+	[Fact]
+	public void SetProperty_ToNull_IsNulled()
+	{
+		// Arrange
+		var obj = new SimpleObject("Steffen", "Some password");
+		var accessor = new ObjectAccessor<SimpleObject>(obj);
+
+		// Act
+		accessor.SetProperty(e => e.Username, null);
+
+		// Assert
+		Assert.Null(obj.Username);
+	}
+
+	[Fact]
+	public void Ctor_NullTarget_Throws()
+	{
+		// Arrange
+		SimpleObject? obj = null;
+
+		// Act && Assert
+		Assert.Throws<ArgumentNullException>(() => new ObjectAccessor(obj!));
+	}
+
+	[Fact]
+	public void Create_ValidTarget_CreatesGenericInstance()
+	{
+		// Arrange 
+		var obj = new SimpleObject("Steffen", "Some password");
+
+		// Act
+		var accessor = ObjectAccessor.Create(obj);
+
+		// Assert
+		Assert.IsType<ObjectAccessor<SimpleObject>>(accessor);
+	}
 }

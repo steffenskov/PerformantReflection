@@ -72,17 +72,12 @@ public static class InterfaceImplementationGenerator
 
 	private static Type CreateImplementationType(Type type)
 	{
-		var methods = type.GetMethods();
-		if (methods.Any(m => !m.IsSpecialName))
-		{
-			throw new InvalidOperationException("Cannot create an implementation for an interface that contains methods");
-		}
+		var typeBuilder = _moduleBuilder.DefineType($"{type.Name}Implementation{GenerateStrippedGuid()}", TypeAttributes.Public);
+		typeBuilder.AddInterfaceImplementation(type);
+		CreateProperties(type, typeBuilder, new HashSet<Type>(), new HashSet<string>());
+		CreateMethods(type, typeBuilder, new HashSet<Type>());
 
-		var tb = _moduleBuilder.DefineType($"{type.Name}Implementation{GenerateStrippedGuid()}", TypeAttributes.Public);
-		tb.AddInterfaceImplementation(type);
-		CreateProperties(type, tb, new HashSet<Type>(), new HashSet<string>());
-
-		return tb.CreateType()!;
+		return typeBuilder.CreateType();
 	}
 
 	private static void CreateProperties(Type type, TypeBuilder typeBuilder, ISet<Type> mappedTypes, ISet<string> excludedProperties)
@@ -92,8 +87,7 @@ public static class InterfaceImplementationGenerator
 			return;
 		}
 
-
-		var properties = type.GetProperties(BindingFlags.Public | BindingFlags.Instance );
+		var properties = type.GetProperties(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly);
 
 		foreach (var prop in properties)
 		{
@@ -104,7 +98,9 @@ public static class InterfaceImplementationGenerator
 
 			var fullPropertyName = $"{prop.DeclaringType?.FullName}.{prop.Name}";
 			if (excludedProperties.Contains(fullPropertyName))
+			{
 				continue;
+			}
 
 			CreateProperty(typeBuilder, prop);
 		}
@@ -181,6 +177,140 @@ public static class InterfaceImplementationGenerator
 		if (interfaceSetterMethod is not null)
 		{
 			typeBuilder.DefineMethodOverride(setMethod, interfaceSetterMethod);
+		}
+	}
+
+	private static void CreateMethods(Type type, TypeBuilder typeBuilder, ISet<Type> mappedTypes)
+	{
+		if (!mappedTypes.Add(type))
+		{
+			return;
+		}
+
+		var methods = type.GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly)
+			.Where(method => !method.IsSpecialName); // IsSpecialName == implementation of properties etc. so skip those
+		foreach (var method in methods)
+		{
+			CreateMethod(typeBuilder, method);
+		}
+
+		// Process methods from inherited interfaces
+		foreach (var implementedInterfaceType in type.GetInterfaces())
+		{
+			CreateMethods(implementedInterfaceType, typeBuilder, mappedTypes);
+		}
+	}
+
+	private static void CreateMethod(TypeBuilder typeBuilder, MethodInfo method)
+	{
+		var parameterTypes = method.GetParameters()
+			.Select(param => param.ParameterType)
+			.ToArray();
+
+		var methodBuilder = typeBuilder.DefineMethod(method.Name, MethodAttributes.Public | MethodAttributes.Virtual | MethodAttributes.NewSlot | MethodAttributes.HideBySig, method.ReturnType,
+			parameterTypes);
+
+		if (method.IsGenericMethodDefinition)
+		{
+			CloneGenericConfiguration(method, methodBuilder);
+		}
+
+		var ilGenerator = methodBuilder.GetILGenerator();
+		if (method.ReturnType != typeof(void))
+		{
+			var rt = method.ReturnType;
+			if (rt.IsGenericParameter)
+			{
+				var local = ilGenerator.DeclareLocal(rt);
+				ilGenerator.Emit(OpCodes.Ldloca_S, local);
+				ilGenerator.Emit(OpCodes.Initobj, rt);
+				ilGenerator.Emit(OpCodes.Ldloc, local);
+			}
+			else if (rt.IsClass)
+			{
+				ilGenerator.Emit(OpCodes.Ldnull);
+			}
+			else
+			{
+				EmitValueTypeDefault(ilGenerator, method.ReturnType);
+			}
+		}
+
+		ilGenerator.Emit(OpCodes.Ret);
+
+		typeBuilder.DefineMethodOverride(methodBuilder, method);
+	}
+
+	private static void CloneGenericConfiguration(MethodInfo method, MethodBuilder methodBuilder)
+	{
+		var sourceArgs = method.GetGenericArguments();
+		var genericParamNames = sourceArgs.Select(p => p.Name).ToArray();
+		var targetArgs = methodBuilder.DefineGenericParameters(genericParamNames);
+		for (var i = 0; i < targetArgs.Length; i++)
+		{
+			var src = sourceArgs[i];
+			var dst = targetArgs[i];
+			dst.SetGenericParameterAttributes(src.GenericParameterAttributes);
+			var constraints = src.GetGenericParameterConstraints();
+			var baseConstraint = constraints.FirstOrDefault(t => t.IsClass);
+			if (baseConstraint is not null)
+			{
+				dst.SetBaseTypeConstraint(baseConstraint);
+			}
+
+			var interfaceConstraints = constraints.Where(t => t.IsInterface).ToArray();
+			if (interfaceConstraints.Length > 0)
+			{
+				dst.SetInterfaceConstraints(interfaceConstraints);
+			}
+		}
+	}
+
+	private static void EmitValueTypeDefault(ILGenerator ilGenerator, Type type)
+	{
+		if (type == typeof(bool) || type == typeof(byte) || type == typeof(sbyte) ||
+		    type == typeof(short) || type == typeof(ushort) || type == typeof(int) || type == typeof(uint))
+		{
+			ilGenerator.Emit(OpCodes.Ldc_I4_0);
+		}
+		else if (type == typeof(long) || type == typeof(ulong))
+		{
+			ilGenerator.Emit(OpCodes.Ldc_I8, 0L);
+		}
+		else if (type == typeof(float))
+		{
+			ilGenerator.Emit(OpCodes.Ldc_R4, 0.0f);
+		}
+		else if (type == typeof(double))
+		{
+			ilGenerator.Emit(OpCodes.Ldc_R8, 0.0d);
+		}
+		else if (type == typeof(IntPtr))
+		{
+			ilGenerator.Emit(OpCodes.Ldc_I4_0);
+			ilGenerator.Emit(OpCodes.Conv_I);
+		}
+		else if (type == typeof(UIntPtr))
+		{
+			ilGenerator.Emit(OpCodes.Ldc_I4_0);
+			ilGenerator.Emit(OpCodes.Conv_U);
+		}
+		else if (type == typeof(char))
+		{
+			ilGenerator.Emit(OpCodes.Ldc_I4_0);
+		}
+		else if (type == typeof(decimal))
+		{
+			// Emit decimal.Zero
+			ilGenerator.Emit(OpCodes.Ldsfld, typeof(decimal).GetField(nameof(decimal.Zero), BindingFlags.Public | BindingFlags.Static)!);
+		}
+		else
+		{
+			// For structs, enums, and other value types, use initobj
+			var local = ilGenerator.DeclareLocal(type);
+			ilGenerator.Emit(OpCodes.Ldloca_S, local);
+			ilGenerator.Emit(OpCodes.Initobj, type);
+			ilGenerator.Emit(OpCodes.Ldloc, local);
 		}
 	}
 

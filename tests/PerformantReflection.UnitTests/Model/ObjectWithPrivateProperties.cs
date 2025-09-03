@@ -1,4 +1,3 @@
-
 namespace PerformantReflection.UnitTests.Model;
 
 public class ObjectWithPrivateProperties
