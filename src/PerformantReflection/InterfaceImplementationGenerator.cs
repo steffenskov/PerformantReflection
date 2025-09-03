@@ -75,7 +75,7 @@ public static class InterfaceImplementationGenerator
 		var typeBuilder = _moduleBuilder.DefineType($"{type.Name}Implementation{GenerateStrippedGuid()}", TypeAttributes.Public);
 		typeBuilder.AddInterfaceImplementation(type);
 		CreateProperties(type, typeBuilder, new HashSet<Type>(), new HashSet<string>());
-		CreateMethods(type, typeBuilder);
+		CreateMethods(type, typeBuilder, new HashSet<Type>());
 
 		return typeBuilder.CreateType();
 	}
@@ -180,13 +180,24 @@ public static class InterfaceImplementationGenerator
 		}
 	}
 
-	private static void CreateMethods(Type type, TypeBuilder typeBuilder)
+	private static void CreateMethods(Type type, TypeBuilder typeBuilder, ISet<Type> mappedTypes)
 	{
+		if (!mappedTypes.Add(type))
+		{
+			return;
+		}
+
 		var methods = type.GetMethods()
 			.Where(method => !method.IsSpecialName); // IsSpecialName == implementation of properties etc. so skip those
 		foreach (var method in methods)
 		{
 			CreateMethod(typeBuilder, method);
+		}
+
+		// Process methods from inherited interfaces
+		foreach (var implementedInterfaceType in type.GetInterfaces())
+		{
+			CreateMethods(implementedInterfaceType, typeBuilder, mappedTypes);
 		}
 	}
 

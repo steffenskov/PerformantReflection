@@ -211,6 +211,9 @@ public class InterfaceImplementationGeneratorTests
 		Assert.Equal(default, implementation.GenericMethod<DateTime>());
 		Assert.Equal(default, implementation.GenericMethod<bool?>());
 
+		// Assert - Implemented other interfaces
+		Assert.Equal(default, implementation.GetAge());
+
 		implementation.GenericVoidMethod(42);
 		implementation.GenericVoidMethod<string>("test");
 	}
@@ -258,7 +261,12 @@ public interface IExtendedInterface : IBaseInterface
 	string Name { get; }
 }
 
-public interface IInterfaceWithMethods
+public interface IOtherInterfaceWithMethods
+{
+	int GetAge();
+}
+
+public interface IInterfaceWithMethods : IOtherInterfaceWithMethods
 {
 	// Properties
 	string Name { get; }
