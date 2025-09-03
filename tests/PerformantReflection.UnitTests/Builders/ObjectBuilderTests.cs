@@ -4,12 +4,6 @@ namespace PerformantReflection.UnitTests.Builders;
 
 public class ObjectBuilderTests
 {
-	private class Fake
-	{
-		public Guid Id { get; private set; }
-		public string? Name { get; private set; }
-	}
-
 	[Fact]
 	public void With_PropertyName_Valid()
 	{
@@ -35,5 +29,11 @@ public class ObjectBuilderTests
 		var ex = Assert.Throws<NotSupportedException>(() => builder.With(instance => new { instance.Name }, null));
 
 		Assert.Equal("Unsupported node type: New", ex.Message);
+	}
+
+	private class Fake
+	{
+		public Guid Id { get; private set; }
+		public string? Name { get; private set; }
 	}
 }
