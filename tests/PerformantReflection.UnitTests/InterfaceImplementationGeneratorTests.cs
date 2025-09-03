@@ -216,6 +216,9 @@ public class InterfaceImplementationGeneratorTests
 
 		implementation.GenericVoidMethod(42);
 		implementation.GenericVoidMethod<string>("test");
+
+		implementation.GenericClassMethod(new CustomClass());
+		implementation.GenericInterfaceMethod(new Customer());
 	}
 
 	[Fact]
@@ -366,6 +369,13 @@ public interface IInterfaceWithMethods : IOtherInterfaceWithMethods
 	bool ProcessData(int[] data, string format, DateTime timestamp);
 	T GenericMethod<T>();
 	void GenericVoidMethod<T>(T value);
+
+	void GenericClassMethod<T>(T value) where T : CustomClass;
+	void GenericInterfaceMethod<T>(T value) where T : ICustomer;
+}
+
+public class CustomClass
+{
 }
 
 public struct MyStruct

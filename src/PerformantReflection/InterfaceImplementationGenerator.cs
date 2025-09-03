@@ -87,7 +87,7 @@ public static class InterfaceImplementationGenerator
 			return;
 		}
 
-		var properties = type.GetProperties(BindingFlags.Public | BindingFlags.Instance);
+		var properties = type.GetProperties(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly);
 
 		foreach (var prop in properties)
 		{
@@ -187,7 +187,7 @@ public static class InterfaceImplementationGenerator
 			return;
 		}
 
-		var methods = type.GetMethods()
+		var methods = type.GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly)
 			.Where(method => !method.IsSpecialName); // IsSpecialName == implementation of properties etc. so skip those
 		foreach (var method in methods)
 		{
@@ -207,20 +207,26 @@ public static class InterfaceImplementationGenerator
 			.Select(param => param.ParameterType)
 			.ToArray();
 
-		var methodBuilder = typeBuilder.DefineMethod(method.Name, MethodAttributes.Public | MethodAttributes.Virtual | MethodAttributes.NewSlot, method.ReturnType, parameterTypes);
+		var methodBuilder = typeBuilder.DefineMethod(method.Name, MethodAttributes.Public | MethodAttributes.Virtual | MethodAttributes.NewSlot | MethodAttributes.HideBySig, method.ReturnType,
+			parameterTypes);
 
 		if (method.IsGenericMethodDefinition)
 		{
-			var genericParamNames = method.GetGenericArguments()
-				.Select(genericParam => genericParam.Name)
-				.ToArray();
-			methodBuilder.DefineGenericParameters(genericParamNames);
+			CloneGenericConfiguration(method, methodBuilder);
 		}
 
 		var ilGenerator = methodBuilder.GetILGenerator();
 		if (method.ReturnType != typeof(void))
 		{
-			if (method.ReturnType.IsClass)
+			var rt = method.ReturnType;
+			if (rt.IsGenericParameter)
+			{
+				var local = ilGenerator.DeclareLocal(rt);
+				ilGenerator.Emit(OpCodes.Ldloca_S, local);
+				ilGenerator.Emit(OpCodes.Initobj, rt);
+				ilGenerator.Emit(OpCodes.Ldloc, local);
+			}
+			else if (rt.IsClass)
 			{
 				ilGenerator.Emit(OpCodes.Ldnull);
 			}
@@ -233,6 +239,31 @@ public static class InterfaceImplementationGenerator
 		ilGenerator.Emit(OpCodes.Ret);
 
 		typeBuilder.DefineMethodOverride(methodBuilder, method);
+	}
+
+	private static void CloneGenericConfiguration(MethodInfo method, MethodBuilder methodBuilder)
+	{
+		var sourceArgs = method.GetGenericArguments();
+		var genericParamNames = sourceArgs.Select(p => p.Name).ToArray();
+		var targetArgs = methodBuilder.DefineGenericParameters(genericParamNames);
+		for (var i = 0; i < targetArgs.Length; i++)
+		{
+			var src = sourceArgs[i];
+			var dst = targetArgs[i];
+			dst.SetGenericParameterAttributes(src.GenericParameterAttributes);
+			var constraints = src.GetGenericParameterConstraints();
+			var baseConstraint = constraints.FirstOrDefault(t => t.IsClass);
+			if (baseConstraint is not null)
+			{
+				dst.SetBaseTypeConstraint(baseConstraint);
+			}
+
+			var interfaceConstraints = constraints.Where(t => t.IsInterface).ToArray();
+			if (interfaceConstraints.Length > 0)
+			{
+				dst.SetInterfaceConstraints(interfaceConstraints);
+			}
+		}
 	}
 
 	private static void EmitValueTypeDefault(ILGenerator ilGenerator, Type type)
@@ -267,6 +298,11 @@ public static class InterfaceImplementationGenerator
 		else if (type == typeof(char))
 		{
 			ilGenerator.Emit(OpCodes.Ldc_I4_0);
+		}
+		else if (type == typeof(decimal))
+		{
+			// Emit decimal.Zero
+			ilGenerator.Emit(OpCodes.Ldsfld, typeof(decimal).GetField(nameof(decimal.Zero), BindingFlags.Public | BindingFlags.Static)!);
 		}
 		else
 		{

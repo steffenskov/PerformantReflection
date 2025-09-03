@@ -48,8 +48,17 @@ public class ObjectAccessor<TObject> : ObjectAccessor
 	{
 	}
 
+	/// <summary>
+	///     Sets the specified property to the provided value.
+	/// </summary>
+	/// <typeparam name="TValue">Property value type.</typeparam>
+	/// <param name="expression">Expression selecting a direct property on <typeparamref name="TObject" />.</param>
+	/// <param name="value">Value to assign.</param>
+	/// <exception cref="ArgumentNullException">Thrown if the expression is null.</exception>
+	/// <exception cref="InvalidOperationException">Thrown if the property has no setter.</exception>
 	public void SetProperty<TValue>(Expression<Func<TObject, TValue?>> expression, TValue? value)
 	{
+		ArgumentNullException.ThrowIfNull(expression);
 		var propertyName = ExpressionParser<TObject>.GetPropertyNameFromExpression(expression);
 		Properties[propertyName].SetValue(value);
 	}
