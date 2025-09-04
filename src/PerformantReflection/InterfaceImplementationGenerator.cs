@@ -2,7 +2,7 @@ namespace PerformantReflection;
 
 /// <summary>
 ///     Used for generating and instantiating implementation classes for interfaces.
-///     The interface in question must only contain properties and must be public.
+///     The interface in question must be public.
 /// </summary>
 public static class InterfaceImplementationGenerator
 {
@@ -75,7 +75,7 @@ public static class InterfaceImplementationGenerator
 		var typeBuilder = _moduleBuilder.DefineType($"{type.Name}Implementation{GenerateStrippedGuid()}", TypeAttributes.Public);
 		typeBuilder.AddInterfaceImplementation(type);
 		CreateProperties(type, typeBuilder, new HashSet<Type>(), new HashSet<string>());
-		CreateMethods(type, typeBuilder, new HashSet<Type>());
+		CreateMethods(type, typeBuilder, new HashSet<Type>(), new HashSet<string>());
 
 		return typeBuilder.CreateType();
 	}
@@ -180,7 +180,7 @@ public static class InterfaceImplementationGenerator
 		}
 	}
 
-	private static void CreateMethods(Type type, TypeBuilder typeBuilder, ISet<Type> mappedTypes)
+	private static void CreateMethods(Type type, TypeBuilder typeBuilder, ISet<Type> mappedTypes, ISet<string> implementedMethods)
 	{
 		if (!mappedTypes.Add(type))
 		{
@@ -191,14 +191,36 @@ public static class InterfaceImplementationGenerator
 			.Where(method => method is { IsSpecialName: false, IsAbstract: true }); // IsSpecialName == implementation of properties etc. so skip those
 		foreach (var method in methods)
 		{
+			var methodName = FormatMethodDescription(method);
+			if (implementedMethods.Contains(methodName))
+			{
+				continue;
+			}
+
 			CreateMethod(typeBuilder, method);
+		}
+
+		var explicitMethods = type.GetMethods(BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.DeclaredOnly)
+			.Where(method => method is { IsSpecialName: false, IsFinal: true });
+		foreach (var method in explicitMethods)
+		{
+			var methodName = FormatMethodDescription(method);
+
+			implementedMethods.Add(methodName);
 		}
 
 		// Process methods from inherited interfaces
 		foreach (var implementedInterfaceType in type.GetInterfaces())
 		{
-			CreateMethods(implementedInterfaceType, typeBuilder, mappedTypes);
+			CreateMethods(implementedInterfaceType, typeBuilder, mappedTypes, implementedMethods);
 		}
+	}
+
+	private static string FormatMethodDescription(MethodInfo method)
+	{
+		var actualMethodName = method.Name.Split('.').Last();
+		var methodName = $"{actualMethodName}_{method.ReturnType.Name}_{string.Join(",", method.GetParameters().Select(p => p.ParameterType.Name))}";
+		return methodName;
 	}
 
 	private static void CreateMethod(TypeBuilder typeBuilder, MethodInfo method)

@@ -51,7 +51,9 @@ public class InterfaceObjectBuilderTests
 		var instance = builder.Build();
 
 		// Assert
+		Assert.Equal("Given Sur", instance.BaseMethod());
 		Assert.Equal("Given Sur", instance.GetDisplayName());
+		Assert.Null(instance.EmptyMethod()); // auto-generated empty implementation
 	}
 
 	public interface IFake : IBaseFake
@@ -78,10 +80,15 @@ public class InterfaceObjectBuilderTests
 	{
 	}
 
-	public interface IWithDefaultMethodImplementation
+	public interface IWithDefaultMethodImplementation : IBase
 	{
 		string GivenName { get; }
 		string SurName { get; }
+
+		string IBase.BaseMethod()
+		{
+			return GetDisplayName();
+		}
 
 		string GetDisplayName()
 		{
@@ -89,5 +96,10 @@ public class InterfaceObjectBuilderTests
 		}
 
 		string EmptyMethod();
+	}
+
+	public interface IBase
+	{
+		string BaseMethod();
 	}
 }
