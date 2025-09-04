@@ -203,7 +203,7 @@ public static class InterfaceImplementationGenerator
 
 		var explicitMethods = type
 			.GetMethods(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.DeclaredOnly)
-			.Where(m => m is { IsSpecialName: false, IsAbstract: false } && m.Name.Contains('.'));
+			.Where(m => m is { IsSpecialName: false, IsAbstract: false });
 		foreach (var method in explicitMethods)
 		{
 			var methodName = FormatMethodDescription(method);
