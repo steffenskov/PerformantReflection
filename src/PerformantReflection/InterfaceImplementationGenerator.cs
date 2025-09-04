@@ -221,9 +221,10 @@ public static class InterfaceImplementationGenerator
 	private static string FormatMethodDescription(MethodInfo method)
 	{
 		var actualMethodName = method.Name.Split('.').Last();
+		var genArity = method.IsGenericMethodDefinition ? $"`{method.GetGenericArguments().Length}" : string.Empty;
 		var ret = FormatType(method.ReturnType);
 		var parms = string.Join(",", method.GetParameters().Select(p => FormatType(p.ParameterType)));
-		return $"{actualMethodName}|{ret}|({parms})";
+		return $"{actualMethodName}{genArity}|{ret}|({parms})";
 	}
 
 	private static string FormatType(Type t)
