@@ -198,10 +198,12 @@ public static class InterfaceImplementationGenerator
 			}
 
 			CreateMethod(typeBuilder, method);
+			implementedMethods.Add(methodName);
 		}
 
-		var explicitMethods = type.GetMethods(BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.DeclaredOnly)
-			.Where(method => method is { IsSpecialName: false, IsFinal: true });
+		var explicitMethods = type
+			.GetMethods(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.DeclaredOnly)
+			.Where(m => m is { IsSpecialName: false, IsAbstract: false } && m.Name.Contains('.'));
 		foreach (var method in explicitMethods)
 		{
 			var methodName = FormatMethodDescription(method);
@@ -219,8 +221,27 @@ public static class InterfaceImplementationGenerator
 	private static string FormatMethodDescription(MethodInfo method)
 	{
 		var actualMethodName = method.Name.Split('.').Last();
-		var methodName = $"{actualMethodName}_{method.ReturnType.Name}_{string.Join(",", method.GetParameters().Select(p => p.ParameterType.Name))}";
-		return methodName;
+		var ret = FormatType(method.ReturnType);
+		var parms = string.Join(",", method.GetParameters().Select(p => FormatType(p.ParameterType)));
+		return $"{actualMethodName}|{ret}|({parms})";
+	}
+
+	private static string FormatType(Type t)
+	{
+		if (t.IsByRef)
+		{
+			return $"{FormatType(t.GetElementType()!)}&";
+		}
+
+		if (!t.IsGenericType)
+		{
+			return t.FullName ?? t.Name;
+		}
+
+		var def = t.GetGenericTypeDefinition();
+		var args = t.GetGenericArguments().Select(FormatType);
+		var defName = (def.FullName ?? def.Name).Split('`')[0];
+		return $"{defName}<{string.Join(",", args)}>";
 	}
 
 	private static void CreateMethod(TypeBuilder typeBuilder, MethodInfo method)
