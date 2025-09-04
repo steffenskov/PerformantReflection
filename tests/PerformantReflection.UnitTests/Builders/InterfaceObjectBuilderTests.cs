@@ -23,7 +23,7 @@ public class InterfaceObjectBuilderTests
 	}
 
 	[Fact]
-	public void CreateInstance_TypeImplementsNestedInterface_Works()
+	public void Build_TypeImplementsNestedInterface_Works()
 	{
 		// Arrange
 		var builder = new InterfaceObjectBuilder<ICustomerAggregate>();
@@ -37,6 +37,21 @@ public class InterfaceObjectBuilderTests
 		// Assert
 		Assert.Equal(id, result.Id);
 		Assert.True(result.Deleted);
+	}
+
+	[Fact]
+	public void Build_InterfaceWithDefaultMethodImplementation_RetainsDefaultImplementation()
+	{
+		// Arrange
+		var builder = new InterfaceObjectBuilder<IWithDefaultMethodImplementation>()
+			.With(e => e.GivenName, "Given")
+			.With(e => e.SurName, "Sur");
+
+		// Act
+		var instance = builder.Build();
+
+		// Assert
+		Assert.Equal("Given Sur", instance.GetDisplayName());
 	}
 
 	public interface IFake : IBaseFake
@@ -61,5 +76,18 @@ public class InterfaceObjectBuilderTests
 
 	public interface ICustomerAggregate : IAggregate<Guid>
 	{
+	}
+
+	public interface IWithDefaultMethodImplementation
+	{
+		string GivenName { get; }
+		string SurName { get; }
+
+		string GetDisplayName()
+		{
+			return $"{GivenName} {SurName}";
+		}
+
+		string EmptyMethod();
 	}
 }

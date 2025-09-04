@@ -188,7 +188,7 @@ public static class InterfaceImplementationGenerator
 		}
 
 		var methods = type.GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly)
-			.Where(method => !method.IsSpecialName); // IsSpecialName == implementation of properties etc. so skip those
+			.Where(method => method is { IsSpecialName: false, IsAbstract: true }); // IsSpecialName == implementation of properties etc. so skip those
 		foreach (var method in methods)
 		{
 			CreateMethod(typeBuilder, method);
