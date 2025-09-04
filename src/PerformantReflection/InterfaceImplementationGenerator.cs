@@ -2,7 +2,7 @@ namespace PerformantReflection;
 
 /// <summary>
 ///     Used for generating and instantiating implementation classes for interfaces.
-///     The interface in question must only contain properties and must be public.
+///     The interface in question must be public.
 /// </summary>
 public static class InterfaceImplementationGenerator
 {
@@ -75,7 +75,7 @@ public static class InterfaceImplementationGenerator
 		var typeBuilder = _moduleBuilder.DefineType($"{type.Name}Implementation{GenerateStrippedGuid()}", TypeAttributes.Public);
 		typeBuilder.AddInterfaceImplementation(type);
 		CreateProperties(type, typeBuilder, new HashSet<Type>(), new HashSet<string>());
-		CreateMethods(type, typeBuilder, new HashSet<Type>());
+		CreateMethods(type, typeBuilder, new HashSet<Type>(), new HashSet<string>());
 
 		return typeBuilder.CreateType();
 	}
@@ -180,7 +180,7 @@ public static class InterfaceImplementationGenerator
 		}
 	}
 
-	private static void CreateMethods(Type type, TypeBuilder typeBuilder, ISet<Type> mappedTypes)
+	private static void CreateMethods(Type type, TypeBuilder typeBuilder, ISet<Type> mappedTypes, ISet<string> implementedMethods)
 	{
 		if (!mappedTypes.Add(type))
 		{
@@ -188,17 +188,61 @@ public static class InterfaceImplementationGenerator
 		}
 
 		var methods = type.GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly)
-			.Where(method => !method.IsSpecialName); // IsSpecialName == implementation of properties etc. so skip those
+			.Where(method => method is { IsSpecialName: false, IsAbstract: true }); // IsSpecialName == implementation of properties etc. so skip those
 		foreach (var method in methods)
 		{
+			var methodName = FormatMethodDescription(method);
+			if (implementedMethods.Contains(methodName))
+			{
+				continue;
+			}
+
 			CreateMethod(typeBuilder, method);
+			implementedMethods.Add(methodName);
+		}
+
+		var explicitMethods = type
+			.GetMethods(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.DeclaredOnly)
+			.Where(m => m is { IsSpecialName: false, IsAbstract: false });
+		foreach (var method in explicitMethods)
+		{
+			var methodName = FormatMethodDescription(method);
+
+			implementedMethods.Add(methodName);
 		}
 
 		// Process methods from inherited interfaces
 		foreach (var implementedInterfaceType in type.GetInterfaces())
 		{
-			CreateMethods(implementedInterfaceType, typeBuilder, mappedTypes);
+			CreateMethods(implementedInterfaceType, typeBuilder, mappedTypes, implementedMethods);
 		}
+	}
+
+	private static string FormatMethodDescription(MethodInfo method)
+	{
+		var actualMethodName = method.Name.Split('.').Last();
+		var genArity = method.IsGenericMethodDefinition ? $"`{method.GetGenericArguments().Length}" : string.Empty;
+		var ret = FormatType(method.ReturnType);
+		var parms = string.Join(",", method.GetParameters().Select(p => FormatType(p.ParameterType)));
+		return $"{actualMethodName}{genArity}|{ret}|({parms})";
+	}
+
+	private static string FormatType(Type t)
+	{
+		if (t.IsByRef)
+		{
+			return $"{FormatType(t.GetElementType()!)}&";
+		}
+
+		if (!t.IsGenericType)
+		{
+			return t.FullName ?? t.Name;
+		}
+
+		var def = t.GetGenericTypeDefinition();
+		var args = t.GetGenericArguments().Select(FormatType);
+		var defName = (def.FullName ?? def.Name).Split('`')[0];
+		return $"{defName}<{string.Join(",", args)}>";
 	}
 
 	private static void CreateMethod(TypeBuilder typeBuilder, MethodInfo method)
