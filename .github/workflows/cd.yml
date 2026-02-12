@@ -65,4 +65,4 @@ jobs:
           user: ${{ secrets.NUGET_USERNAME }}
 
       - name: "Push package"
-        run: dotnet nuget push ${{ env.PACKAGE_OUTPUT_DIRECTORY }}/*.nupkg -k ${{ steps.login.outputs.NUGET_API_KEY }} ${{ env.NUGET_SOURCE_URL }} --skip-duplicate --source https://api.nuget.org/v3/index.json
+        run: dotnet nuget push ${{ env.PACKAGE_OUTPUT_DIRECTORY }}/*.nupkg --api-key ${{ steps.login.outputs.NUGET_API_KEY }} --source ${{ env.NUGET_SOURCE_URL }} --skip-duplicate
